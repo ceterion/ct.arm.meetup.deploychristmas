@@ -1,2 +1,2 @@
 # DEPLOY CHRISTMAS - Azure Infrastructure Resource Template Tricks
-![Deploy Christmas](/03-NestedDeployment/CustomScripts/Resources/deployazure.png)
+![Deploy Christmas](https://raw.githubusercontent.com/ceterion/ct.arm.meetup.deploychristmas/master/03-NestedDeployment/CustomScripts/resources/deployazure.png)
