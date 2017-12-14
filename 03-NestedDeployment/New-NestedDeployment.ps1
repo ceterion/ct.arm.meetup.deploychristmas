@@ -5,15 +5,13 @@
 
 
 Param(
-    [string] [Parameter(Mandatory=$true)] $ArtifactStagingDirectory,
-    [string] [Parameter(Mandatory=$true)] $ResourceGroupLocation,
-    [string] $ResourceGroupName = $ArtifactStagingDirectory.replace('.\',''), #remove .\ if present
-    [switch] $UploadArtifacts,
+    [string] $ArtifactStagingDirectory = $PSScriptRoot,
+    [switch] $UploadArtifacts = $true,
     [string] $StorageAccountName,
-    [string] $StorageContainerName = $ResourceGroupName.ToLowerInvariant() + '-stageartifacts',
+    [string] $StorageContainerName = $(Split-Path $PSScriptRoot -Leaf).ToLowerInvariant() + '-stageartifacts',
     [string] $TemplateFile = $ArtifactStagingDirectory + '\azuredeploy.json',
-    [string] $TemplateParametersFile = $ArtifactStagingDirectory + '.\azuredeploy.parameters.json',
-    [string] $DSCSourceFolder = $ArtifactStagingDirectory + '.\DSC',
+    [string] $TemplateParametersFile = $ArtifactStagingDirectory + '\azuredeploy.parameters.json',
+    [string] $DSCSourceFolder = $ArtifactStagingDirectory + '\DSC',
     [switch] $ValidateOnly,
     [string] $DebugOptions = "None",
     [switch] $Dev
@@ -61,11 +59,19 @@ if ($UploadArtifacts) {
     if (($JsonParameters | Get-Member -Type NoteProperty 'parameters') -ne $null) {
         $JsonParameters = $JsonParameters.parameters
     }
+    # Get location 
+    $ResourceGroupLocation = $JsonParameters | Select-Object -Expand 'location' -ErrorAction Ignore | Select-Object -Expand 'value' -ErrorAction Ignore
+
     $ArtifactsLocationName = '_artifactsLocation'
     $ArtifactsLocationSasTokenName = '_artifactsLocationSasToken'
     $OptionalParameters[$ArtifactsLocationName] = $JsonParameters | Select-Object -Expand $ArtifactsLocationName -ErrorAction Ignore | Select-Object -Expand 'value' -ErrorAction Ignore
     $OptionalParameters[$ArtifactsLocationSasTokenName] = $JsonParameters | Select-Object -Expand $ArtifactsLocationSasTokenName -ErrorAction Ignore | Select-Object -Expand 'value' -ErrorAction Ignore
 
+    # Get current AzureContext Account ID 
+    $CurrentAccountID = (Get-AzureRmADUser -defaultprofile (Get-AzureRmcontext)).id
+    
+    #$CurrentAccountID= (Get-AzureRmContext).name.trim("[","]").split(",").trim()[1]
+    $OptionalParameters['AccountID'] = $CurrentAccountID
     # Create DSC configuration archive
     if (Test-Path $DSCSourceFolder) {
         $DSCSourceFilePaths = @(Get-ChildItem $DSCSourceFolder -File -Filter '*.ps1' | ForEach-Object -Process {$_.FullName})
@@ -79,12 +85,14 @@ if ($UploadArtifacts) {
     if ($StorageAccountName -eq '') {
         $StorageAccountName = 'stage' + ((Get-AzureRmContext).Subscription.Id).Replace('-', '').substring(0, 19)
     }
-
+    
+    $StorageResourceGroupName = 'ARM_Deploy_Staging'
     $StorageAccount = (Get-AzureRmStorageAccount | Where-Object{$_.StorageAccountName -eq $StorageAccountName})
+
 
     # Create the storage account if it doesn't already exist
     if ($StorageAccount -eq $null) {
-        $StorageResourceGroupName = 'ARM_Deploy_Staging'
+        
         New-AzureRmResourceGroup -Location "$ResourceGroupLocation" -Name $StorageResourceGroupName -Force
         $StorageAccount = New-AzureRmStorageAccount -StorageAccountName $StorageAccountName -Type 'Standard_LRS' -ResourceGroupName $StorageResourceGroupName -Location "$ResourceGroupLocation"
     }
@@ -120,10 +128,13 @@ else {
 $TemplateArgs.Add('TemplateParameterFile', $TemplateParametersFile)
 
 # Create or update the resource group using the specified template file and template parameters file
-New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -Verbose -Force -ErrorAction Stop 
+$ResourceGroups = $JsonParameters.ResourceGroups | Select-Object -ExpandProperty value
+foreach($ResourceGroup in $ResourceGroups.psobject.properties.value){
+    New-AzureRmResourceGroup -Name $ResourceGroup -Location $ResourceGroupLocation -Verbose -Force -ErrorAction Stop 
+}
 
 if ($ValidateOnly) {
-    $ErrorMessages = Format-ValidationOutput (Test-AzureRmResourceGroupDeployment -ResourceGroupName $ResourceGroupName `
+    $ErrorMessages = Format-ValidationOutput (Test-AzureRmResourceGroupDeployment -ResourceGroupName $StorageResourceGroupName `
                                                                                   @TemplateArgs `
                                                                                   @OptionalParameters)
     if ($ErrorMessages) {
@@ -135,7 +146,7 @@ if ($ValidateOnly) {
 }
 else {
     New-AzureRmResourceGroupDeployment -Name ((Get-ChildItem $TemplateFile).BaseName + '-' + ((Get-Date).ToUniversalTime()).ToString('MMdd-HHmm')) `
-                                       -ResourceGroupName $ResourceGroupName `
+                                       -ResourceGroupName $StorageResourceGroupName `
                                        @TemplateArgs `
                                        @OptionalParameters `
                                        -Force -Verbose `
