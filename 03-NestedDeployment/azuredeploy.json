@@ -1,0 +1,170 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      //Deployment Artifacts location and SAS-Token
+      "_artifactsLocation": {
+        "type": "string",
+        "metadata": {
+          "description": "Auto-generated container in staging storage account to receive post-build staging folder upload"
+        }
+      },
+      "_artifactsLocationSasToken": {
+        "type": "securestring",
+        "metadata": {
+          "description": "Auto-generated token to access _artifactsLocation"
+        }
+      },
+      "AccountID": {
+        "type": "string",
+        "metadata": {
+             "description": "The Account which is executing the deployment"
+         }
+     },
+     "location": {
+      "type": "string",
+      "metadata": {
+           "description": "the Azure location to use for the deployment "
+       }
+   },
+      "EnvironmentPrefix": {
+         "type": "string",
+         "defaultValue": "ff",
+         "metadata": {
+              "description": "Unique prefix for your Environment. Might be a Customer Name or something related"
+          }
+      },
+      "keyvaultname": {
+         "type": "string",
+         "defaultValue": "DeploymentVault",
+         "metadata": {
+              "description": "The Key Vault storing the secrets for this deployment"
+          }
+      },
+      "NetworkName": {
+         "type": "string",
+         "defaultValue": "VirtualNetwork",
+         "metadata": {
+              "description": "Name of the virtual Network"
+          }
+      },
+      "ResourceGroups": {
+        "type": "object",
+        "defaultValue": {
+          "Network": "NetworkResources",
+          "KeyVault": "securitydata",
+          "Monitoring": "Monitoring"
+        },
+        "metadata": {
+             "description": "ResourceGroup to deploy Network Components to"
+        }
+      }
+    },
+    "variables": {  
+        //Nested Template Information
+        "resourceTemplateFolder": "Nested",
+        "ExtensionTemplateFolder": "CustomScripts",
+        
+        "KeyVaultTemplateFileName": "keyvault.json",
+        "NetworkTemplateFileName": "vnet.json",
+        "VMTemplateFileName": "vm.json",
+        "DiagnosticsStorageTemplateFileName": "DiagnosticsStorage.json",
+        
+        "VMTemplateURI": "[concat(parameters('_artifactsLocation'), '/', variables('resourceTemplateFolder'), '/', variables('VMTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+        "kevaultTemplateURI": "[concat(parameters('_artifactsLocation'), '/', variables('resourceTemplateFolder'), '/', variables('KeyVaultTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+        "NetworkTemplateURI": "[concat(parameters('_artifactsLocation'), '/', variables('resourceTemplateFolder'), '/', variables('NetworkTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+        "DiagnosticsStorageTemplateURI": "[concat(parameters('_artifactsLocation'), '/', variables('resourceTemplateFolder'), '/', variables('DiagnosticsStorageTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+
+        "deploymentsapiVersion": "2017-08-01",
+
+        "keyvaultname": "[concat(parameters('EnvironmentPrefix'),'-',parameters('keyvaultname'))]",
+
+        "DiagnosticsStorageAccountName": "[toLower(concat(parameters('EnvironmentPrefix'),'bootdiag'))]"
+    },
+    "resources": [
+      {
+        "name": "Network",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "[variables('deploymentsapiVersion')]",
+        "ResourceGroup": "[parameters('ResourceGroups').Network]",
+        "dependsOn": [],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('NetworkTemplateURI')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "NetworkName": { "value": "[parameters('NetworkName')]" },
+            "NetworkAddressPrefixes": { "value": ["10.0.0.0/16"] } 
+          }
+        }
+      },
+      {
+        "name": "DiagnosticsStorageAccount",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "[variables('deploymentsapiVersion')]",
+        "ResourceGroup": "[parameters('ResourceGroups').Monitoring]",
+        "dependsOn": [],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('DiagnosticsStorageTemplateURI')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "StorageAccountName": { "value":"[variables('DiagnosticsStorageAccountName')]" }
+          }
+        }
+      },
+    {
+      "name": "vm-web",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "[variables('deploymentsapiVersion')]",
+      "ResourceGroup": "[parameters('ResourceGroups').webservers]",
+      "dependsOn": [
+        "Microsoft.Resources/deployments/DiagnosticsStorageAccount",
+        "Microsoft.Resources/deployments/Network"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('VMTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "_artifactsLocation": { "value": "[parameters('_artifactsLocation')]" },
+          "_artifactsLocationSasToken": { "value": "[parameters('_artifactsLocationSasToken')]" },
+          "EnvironmentPrefix": {"value": "[parameters('EnvironmentPrefix')]"},
+          "DiagnosticsStorageAccountName": { "value": "[variables('DiagnosticsStorageAccountName')]" },
+          "imageSKU": { "value": "2016-Datacenter" },
+          "imageVersion": { "value": "latest" },
+          "NetName": { "value": "[parameters('NetworkName')]" },
+          "NetResourceGroup": { "value": "[parameters('ResourceGroups').Network]" },
+          "NetSubnetName": { "value": "Webservers" },
+          "Service": { "value": "web" },
+          "VMCount": { "value": 2 },
+          "VMNamePrefix": { "value": "[concat(parameters('EnvironmentPrefix'),'-web-')]" },
+          "VMNameStartOffset": { "value": 1 },
+          "VMSize": { "value": "Standard_A1_v2" },
+          "VMAdminPassword": {"reference": {
+            "keyVault": {
+              "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', parameters('ResourceGroups').KeyVault, '/providers/Microsoft.KeyVault/vaults/',variables('keyvaultname'))]"
+            },
+            "secretName": "AdminLocal"
+            }
+          },
+          "VMAdminUserName": { "value": "AdminLocal" },
+          "CustomscriptExtensionFileURIs": { 
+            "value": [
+              "https://"
+            ]
+          }
+        }
+      }
+    }
+    ],
+      "outputs": {
+      }
+    }
+  
