@@ -10,7 +10,7 @@
     },
     "ResourceGroups":{
     "value": {
-      "Network": "NetworkResources",
+      "Network": "Network",
       "KeyVault": "securitydata",
       "Monitoring": "Monitoring",
       "Webservers": "webservers"
