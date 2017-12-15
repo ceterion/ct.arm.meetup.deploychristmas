@@ -14,14 +14,17 @@ It also deploys a secret as prerequisite for the next part.
 
 ### 03 NestedDeployment (Cross-Resource-Group)
 This part shows a more complex scenario including Cross Resource Group Nested Deploymnents and Utilization of many different Resource Manager Functions. Therefore, a slightly modified version of the [Deploy-AzureResourceGroup.ps1](https://github.com/Azure/azure-quickstart-templates/blob/master/Deploy-AzureResourceGroup.ps1) script from the Azure Quickstart Templates Repository.
+
+> **Important:** In order to deploy part 3, make sure you created a keyvault first. Name and Secret Name must match the ones in this template
+
 The following Resources are created:
 1. Resource Group Network
- * a simple virtual Network with one subnet
+  * a simple virtual Network with one subnet
 2. Resource Group Monitoring 
- * Storage Account used for Bootdiagnostics Data
+  * Storage Account used for Bootdiagnostics Data
 3. Resource Group webservers
- * 1 load Balancer with public IP
- * 1 Availability Set
- * 1-n of the following
-    * Network Interface connected to the Load Balancer Backend Pool
-    * VM with managed Disk and CustomScript Extension
+  * 1 load Balancer with public IP
+  * 1 Availability Set
+  * 1-n of the following
+  * Network Interface connected to the Load Balancer Backend Pool
+  * VM with managed Disk and CustomScript Extension
