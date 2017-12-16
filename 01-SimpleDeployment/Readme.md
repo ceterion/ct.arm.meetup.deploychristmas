@@ -18,7 +18,8 @@ After using the VM Snippet, most Parameters to be changed become highlighted and
 >**Caution** Do not use others than smaller case letters and numbers here, since there are some resources that won't accept other signs. (like the storage account)
 
 ### Other properties to change
-| Name | Type | 
-| ---- | ---- | 
-| value | string |
+| Name | Comments | 
+| ---- | -------- | 
+| adminUsername | string |
+| adminPassword | Must match Windows Password complexity requirements |
 
