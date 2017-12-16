@@ -312,8 +312,9 @@
                 "displayName": "vm-nic"
               },
             "dependsOn": [
-              "[Concat('Microsoft.Resources/links/',variables('NetName'))]",
-              "[concat('Microsoft.Network/loadBalancers/', variables('lbName'))]"
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('VMNamePrefix'), padLeft(add(copyindex(),parameters('VMNameStartOffset')),2,'0'),'-pip')]",
+                "[Concat('Microsoft.Resources/links/',variables('NetName'))]",
+                "[concat('Microsoft.Network/loadBalancers/', variables('lbName'))]"
             ],
             "copy": {
               "name": "nicLoop",
