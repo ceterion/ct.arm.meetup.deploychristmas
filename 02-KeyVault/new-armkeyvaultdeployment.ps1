@@ -6,7 +6,7 @@ $Parameters = New-Object -TypeName Hashtable
 # Get current AzureContext Account ID 
 $CurrentAccountID = (Get-AzureRmADUser -defaultprofile (Get-AzureRmcontext)).id.tostring()
 $Parameters.Add('AccountID', $CurrentAccountID)
-$Parameters.Add('keyVaultName', 'ffmeetup-DeploymentVault')
+$Parameters.Add('keyVaultName', 'ff-DeploymentVault')
 $Parameters.Add('secretname', 'AdminLocal')
 
 New-AzureRmResourceGroup -name $resourcegroupname -Location "westeurope"
