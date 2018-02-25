@@ -2,18 +2,6 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "_artifactsLocation": {
-            "type": "string",
-            "metadata": {
-              "description": "Auto-generated container in staging storage account to receive post-build staging folder upload"
-            }
-        },
-        "_artifactsLocationSasToken": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Auto-generated token to access _artifactsLocation"
-            }
-        },
         "EnvironmentPrefix": {
          "type": "string",
          "defaultValue": "ff",
@@ -25,12 +13,6 @@
             "type": "string",
             "metadata": {
                 "description": "Storage Account to store Diagnostics data Entries, name must be unique"
-            }
-        },
-        "keyvault":{
-            "type": "object",
-            "metadata": {
-                "description": "KeyVault Parameters"
             }
         },
         "Network":{
@@ -97,11 +79,7 @@
 
         "publicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]",
         
-        "frontEndIPConfigID": "[concat(variables('lbID'),'/frontendIPConfigurations/LoadBalancerFrontEnd')]",
-        
-
-        "templates.folder.ResourceTemplates": "Nested",
-        "templates.uri.secret": "[concat(parameters('_artifactsLocation'), '/', variables('templates.folder.ResourceTemplates'), '/', 'keyvaultsecret.json', parameters('_artifactsLocationSasToken'))]"
+        "frontEndIPConfigID": "[concat(variables('lbID'),'/frontendIPConfigurations/LoadBalancerFrontEnd')]"
     },
     "resources": [
         {
