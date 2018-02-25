@@ -1,0 +1,175 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+              "description": "Auto-generated container in staging storage account to receive post-build staging folder upload"
+            }
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Auto-generated token to access _artifactsLocation"
+            }
+        },
+        "EnvironmentPrefix": {
+         "type": "string",
+         "defaultValue": "ff",
+         "metadata": {
+              "description": "Unique prefix for your Environment. Might be a Customer Name or something related"
+          }
+        },
+        "DiagnosticsStorageAccountName": {
+            "type": "string",
+            "metadata": {
+                "description": "Storage Account to store Diagnostics data Entries, name must be unique"
+            }
+        },
+        "keyvault":{
+            "type": "object"
+        },
+        "Network":{
+            "type": "object"
+        },
+        "Service": {
+            "type": "string",
+            "defaultValue": "web",
+            "metadata": {
+                "description": "The service Name is used as part of the generated virtual machine names"
+            }
+        },
+        "VMAdminPassword": {
+            "type": "securestring"
+        },
+        "VMAdminUserName": {
+            "type": "string",
+            "minLength": 1
+        },
+        "VM": {
+            "type":"object"
+        },
+        "CustomscriptExtensionFileURIs": {
+            "type": "array",
+            "metadata": {
+                "description": "Size of the virtual machine, must be available in the virtual machine's location"
+            }
+        },
+        "CustomScriptCommand": {
+            "type": "string",
+            "metadata": {
+                "description": "Size of the virtual machine, must be available in the virtual machine's location"
+            }
+        }
+    },
+    "variables": {
+        "apiversion-deployments": "2017-08-01",
+        "apiVersion-links": "2017-08-01",
+        
+        "NetID": "[resourceId(parameters('Network').ResourceGroup, 'Microsoft.Network/virtualNetworks', parameters('Network').Name)]",
+
+        "AvailabilitySetName": "[toLower(concat('as-',resourceGroup().location,'-',parameters('Service')))]",
+
+        "publicIPAddressName": "[concat('lb-',parameters('EnvironmentPrefix'),'-',parameters('Service'))]",
+        "publicIPAddressType": "Dynamic",
+        
+        "templates.folder.ResourceTemplates": "Nested",
+        "templates.uri.secret": "[concat(parameters('_artifactsLocation'), '/', variables('templates.folder.ResourceTemplates'), '/', 'keyvaultsecret.json', parameters('_artifactsLocationSasToken'))]",
+        "templates.uri.vm": "[concat(parameters('_artifactsLocation'), '/', variables('templates.folder.ResourceTemplates'), '/', 'vm.json', parameters('_artifactsLocationSasToken'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/links",
+            "apiVersion": "[variables('apiversion-links')]",
+            "name": "[parameters('Network').name]",
+            "properties": {
+                "targetId": "[variables('NetID')]",
+                "notes": "string"
+            }
+        },
+        {
+            "name": "[concat(parameters('VM').NamePrefix,padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'),'secret')]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiversion-deployments')]",
+            "ResourceGroup": "[parameters('KeyVault').ResourceGroup]",
+            "dependsOn": [],
+            "properties": {
+              "mode": "Incremental",
+              "templateLink": {
+                "uri": "[variables('templates.uri.secret')]",
+                "contentVersion": "1.0.0.0"
+              },
+              "parameters": {
+                "Secret": { "value": "[concat(parameters('keyvault').name, '/', parameters('VM').NamePrefix, padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'),'-admin')]" }
+              }
+            },
+            "copy": {
+                "name": "secretsCopy",
+                "count": "[parameters('VM').Count]"
+            }
+        },
+        {
+          "name": "[concat(parameters('VM').NamePrefix,padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'))]",
+          "type": "Microsoft.Resources/deployments",
+          "apiVersion": "[variables('apiversion-deployments')]",
+          "dependsOn": [],
+          "copy": {
+            "name": "VMCopy",
+            "count": "[parameters('VM').Count]"
+          },
+          "properties": {
+            "mode": "Incremental",
+            "templateLink": {
+              "uri": "[variables('templates.uri.vm')]",
+              "contentVersion": "1.0.0.0"
+            },
+            
+            "parameters": {
+              "DiagnosticsStorageAccountName": { "value": "[parameters('DiagnosticsStorageAccountName')]" },
+              "Network":{ 
+                "value": {
+                  "Name": "[parameters('Network').name]",
+                  "ResourceGroup": "[parameters('Network').ResourceGroup]",
+                  "Subnet":  "Webservers"
+                }
+              },
+              "VM":{ 
+                "value": {
+                  "count": 2,
+                  "NamePrefix": "[concat(parameters('EnvironmentPrefix'),'-web-')]",
+                  "StartOffset": 1,
+                  "Size": "Standard_A1_v2",
+                  "ImageSKU": "2016-Datacenter",
+                  "ImageVersion": "latest",
+                  "ImagePublisher": "MicrosoftWindowsServer",
+                  "ImageOffer": "WindowsServer"
+                }
+              },
+              "Service": { "value": "web" },
+              "VMAdminUserName": { "value": "AdminLocal" },
+              "VMAdminPassword": {
+                "reference": {
+                  "keyVault": {
+                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', parameters('keyvault').ResourceGroup, '/providers/Microsoft.KeyVault/vaults/',parameters('keyvault').name)]"
+                  },
+                  //"secretName": "AdminLocal"
+                  "secretName": "[concat(parameters('VM').NamePrefix, padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'),'-admin')]"
+                }
+              },
+              "VMName": { "value": "[ concat(parameters('VM').NamePrefix,padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'))]"},
+              "CustomscriptExtensionFileURIs": { 
+                "value": [
+                  "https://raw.githubusercontent.com/ceterion/ct.arm.meetup.deploychristmas/master/03-NestedDeployment/CustomScripts/resources/default.htm",
+                  "https://raw.githubusercontent.com/ceterion/ct.arm.meetup.deploychristmas/master/03-NestedDeployment/CustomScripts/resources/deployazure.png",
+                  "https://raw.githubusercontent.com/ceterion/ct.arm.meetup.deploychristmas/master/03-NestedDeployment/CustomScripts/new-deployazurewebserver.ps1"
+                ]
+              },
+              "CustomScriptCommand":{"value": "powershell -ExecutionPolicy Unrestricted -File new-deployazurewebserver.ps1"} 
+            }
+          }
+      }
+    ],
+    "outputs": {
+    }
+}

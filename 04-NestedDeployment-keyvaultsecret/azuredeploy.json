@@ -66,9 +66,10 @@
         "KeyVaultTemplateFileName": "keyvault.json",
         "NetworkTemplateFileName": "vnet.json",
         "VMTemplateFileName": "vm.json",
+        "ServiceTemplateFileName": "service.json",
         "DiagnosticsStorageTemplateFileName": "DiagnosticsStorage.json",
         
-        "VMTemplateURI": "[concat(parameters('_artifactsLocation'), '/', variables('resourceTemplateFolder'), '/', variables('VMTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+        "ServiceTemplateURI": "[concat(parameters('_artifactsLocation'), '/', variables('resourceTemplateFolder'), '/', variables('ServiceTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
         "kevaultTemplateURI": "[concat(parameters('_artifactsLocation'), '/', variables('resourceTemplateFolder'), '/', variables('KeyVaultTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
         "NetworkTemplateURI": "[concat(parameters('_artifactsLocation'), '/', variables('resourceTemplateFolder'), '/', variables('NetworkTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
         "DiagnosticsStorageTemplateURI": "[concat(parameters('_artifactsLocation'), '/', variables('resourceTemplateFolder'), '/', variables('DiagnosticsStorageTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
@@ -127,7 +128,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[variables('VMTemplateURI')]",
+          "uri": "[variables('ServiceTemplateURI')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -155,7 +156,9 @@
               "StartOffset": 1,
               "Size": "Standard_A1_v2",
               "ImageSKU": "2016-Datacenter",
-              "ImageVersion": "latest"
+              "ImageVersion": "latest",
+              "ImagePublisher": "MicrosoftWindowsServer",
+              "ImageOffer": "WindowsServer"
             }
           },
           "Service": { "value": "web" },
