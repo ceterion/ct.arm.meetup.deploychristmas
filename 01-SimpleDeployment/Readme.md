@@ -15,7 +15,7 @@ It can be used withoutany parameters. However, the target resource group must be
 
 ## Properties
 After using the VM Snippet, most Parameters to be changed become highlighted and can be replaced at once.
->**Caution** Do not use others than smaller case letters and numbers here, since there are some resources that won't accept other signs. (like the storage account)
+>**Caution** only use lower case letters and numbers here, since there are some resources that won't accept other signs. (like the storage account)
 
 ### Other properties to change
 | Name | Comments | 
@@ -23,3 +23,9 @@ After using the VM Snippet, most Parameters to be changed become highlighted and
 | adminUsername | string |
 | adminPassword | Must match Windows Password complexity requirements |
 
+## Resource Naming conventions
+Some resources need to have unique names across subscriptions, regions or even globally
+A storage account for example always comes along with a public DNS Name. Therefore it must be unique.
+
+Microsoft gives a good overview about naming conventions with the following article:
+[https://docs.microsoft.com/en-us/azure/architecture/best-practices/naming-conventions]
