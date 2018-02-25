@@ -64,8 +64,14 @@
         }
     },
     "variables": {
-        "apiversion-deployments": "2017-08-01",
-        "apiVersion-links": "2017-08-01",
+        "apiversions":{
+            "deployments": "2017-08-01",
+            "links": "2017-08-01",
+            "availabilitySets": "2017-08-01",
+            "extensions": "2016-03-30",
+            "publicIPAddresses": "2015-05-01-preview",
+            "LoadBalancers": "2015-05-01-preview"
+        },
         
         "NetID": "[resourceId(parameters('Network').ResourceGroup, 'Microsoft.Network/virtualNetworks', parameters('Network').Name)]",
         "NetSubnetRef": "[Concat(variables('NetID'), '/subnets/', parameters('Network').SubNet)]",
@@ -91,7 +97,7 @@
     "resources": [
         {
             "type": "Microsoft.Resources/links",
-            "apiVersion": "[variables('apiversion-links')]",
+            "apiVersion": "[variables('apiversions').links]",
             "name": "[parameters('Network').name]",
             "properties": {
                 "targetId": "[variables('NetID')]",
@@ -99,7 +105,7 @@
             }
         },
         {
-            "apiVersion": "[providers('Microsoft.Compute', 'availabilitySets').apiVersions[0]]",
+            "apiVersion": "[variables('apiversions').availabilitySets]",
             "type": "Microsoft.Compute/availabilitySets",
             "name": "[variables('availabilitySetName')]",
             "location": "[resourceGroup().location]",
@@ -115,7 +121,7 @@
             }
         },
         {
-            "apiVersion": "2015-05-01-preview",
+            "apiVersion": "[variables('apiversions').publicIPAddresses]",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('publicIPAddressName')]",
             "location": "[resourceGroup().location]",
@@ -127,7 +133,7 @@
             }
           },
         {
-            "apiVersion": "2015-05-01-preview",
+            "apiVersion": "[variables('apiversions').LoadBalancers]",
             "name": "[variables('lbName')]",
             "type": "Microsoft.Network/loadBalancers",
             "location": "[resourceGroup().location]",
@@ -157,7 +163,7 @@
                     "frontendIPConfiguration": {
                       "id": "[variables('frontEndIPConfigID')]"
                     },
-                    "protocol": "tcp",
+                    "protocol": "Tcp",
                     "frontendPort": 50001,
                     "backendPort": 3389,
                     "enableFloatingIP": false
@@ -169,7 +175,7 @@
                     "frontendIPConfiguration": {
                       "id": "[variables('frontEndIPConfigID')]"
                     },
-                    "protocol": "tcp",
+                    "protocol": "Tcp",
                     "frontendPort": 50002,
                     "backendPort": 3389,
                     "enableFloatingIP": false
@@ -201,7 +207,7 @@
                 {
                   "name": "tcpProbe",
                   "properties": {
-                    "protocol": "tcp",
+                    "protocol": "Tcp",
                     "port": 80,
                     "intervalInSeconds": 5,
                     "numberOfProbes": 2
@@ -334,7 +340,7 @@
                     "name": "meetup-webserver",
                     "type": "extensions",
                     "location": "[resourceGroup().location]",
-                    "apiVersion": "2016-03-30",
+                    "apiVersion": "[variables('apiversions').extensions]",
                     "dependsOn": [
                       "[resourceId('Microsoft.Compute/virtualMachines',  concat(parameters('VM').NamePrefix,padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0')))]"
                     ],
