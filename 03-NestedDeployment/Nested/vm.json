@@ -58,7 +58,7 @@
         "apiversions":{
             "deployments": "2017-08-01",
             "links": "2017-08-01",
-            "availabilitySets": "2017-08-01",
+            "availabilitySets": "2017-12-01",
             "extensions": "2016-03-30",
             "publicIPAddresses": "2015-05-01-preview",
             "LoadBalancers": "2015-05-01-preview"
@@ -204,25 +204,6 @@
             }
           },
         {
-            "apiVersion": "2015-06-15",
-            "type": "Microsoft.Network/publicIPAddresses",
-            "name": "[concat(parameters('VM').NamePrefix, padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'),'-pip')]",
-            "location": "[resourceGroup().location]",
-            "tags": {
-                "displayName": "PublicIPAddress"
-            },
-            "properties": {
-                "publicIPAllocationMethod": "Dynamic",
-                "dnsSettings": {
-                    "domainNameLabel": "[toLower(concat(parameters('VM').NamePrefix, padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0')))]"
-                }
-            },
-            "copy": {
-                "name": "publiciploop",
-                "count": "[parameters('VM').Count]"
-            }
-        },
-        {
             "apiVersion": "2015-05-01-preview",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[concat(parameters('VM').NamePrefix, padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'),'-nic')]",
@@ -231,7 +212,6 @@
                 "displayName": "vm-nic"
               },
             "dependsOn": [
-                "[concat('Microsoft.Network/publicIPAddresses/', parameters('VM').NamePrefix, padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'),'-pip')]",
                 "[Concat('Microsoft.Resources/links/',parameters('Network').Name)]",
                 "[concat('Microsoft.Network/loadBalancers/', variables('lbName'))]"
             ],
@@ -245,9 +225,6 @@
                   "name": "ipconfig1",
                   "properties": {
                     "privateIPAllocationMethod": "Dynamic",
-                    "publicIPAddress": {
-                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('VM').NamePrefix, padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'),'-pip'))]"
-                    },
                     "subnet": {
                       "id": "[variables('NetSubnetRef')]"
                     },
