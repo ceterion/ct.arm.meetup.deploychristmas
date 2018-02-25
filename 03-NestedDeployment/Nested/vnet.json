@@ -22,7 +22,6 @@
         {
             "apiVersion": "2017-06-01",
             "type": "Microsoft.Network/virtualNetworks",
-            //"name": "VirtualNetwork",
             "name": "[parameters('NetworkName')]",
             "location": "[resourceGroup().location]",
             "tags": {
