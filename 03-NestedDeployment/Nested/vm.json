@@ -134,7 +134,6 @@
         "NetSubnetName": "[parameters('NetSubnetName')]",
         "NetSubnetRef": "[Concat(variables('NetID'), '/subnets/', variables('NetSubnetName'))]",
 
-        //VM Variables
         "VMImagePublisher": "MicrosoftWindowsServer",
         "VMImageOffer": "WindowsServer",
         "VMNamePrefix": "[parameters('VMNamePrefix')]",        
@@ -142,7 +141,6 @@
 
         "AvailabilitySetName": "[toLower(concat('as-',resourceGroup().location,'-',parameters('Service')))]",
         
-        //DSC Extension Variables - BaseConfiguration
         "dscMemberBaseConfigurationURL": "[concat(parameters('_artifactsLocation'), '/', 'MemberBaseConfiguration.zip')]",
         "dscMemberBaseConfigurationFunction": "Configure-Memberserver.ps1\\MemberBaseSetup",
         
@@ -151,7 +149,6 @@
         "New-webserverScriptFileName": "Set-WindowsserverBaseConfig.ps1",
 
 
-        //Load Balancer Parameters
         "lbname": "[concat('lb-',parameters('Service'))]",
         "publicIPAddressName": "[concat('lb-',parameters('EnvironmentPrefix'),'-',parameters('Service'))]",
         "publicIPAddressType": "Dynamic",
