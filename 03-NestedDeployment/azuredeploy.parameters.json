@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "EnvironmentPrefix": {
-        "value": "ffmeetup"
+        "value": "ff"
     },
     "location": {
         "value": "westeurope"

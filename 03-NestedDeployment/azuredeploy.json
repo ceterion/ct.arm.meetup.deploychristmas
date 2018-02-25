@@ -2,7 +2,6 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-      //Deployment Artifacts location and SAS-Token
       "_artifactsLocation": {
         "type": "string",
         "metadata": {
@@ -61,7 +60,6 @@
       }
     },
     "variables": {  
-        //Nested Template Information
         "resourceTemplateFolder": "Nested",
         "ExtensionTemplateFolder": "CustomScripts",
         
@@ -137,24 +135,41 @@
           "_artifactsLocationSasToken": { "value": "[parameters('_artifactsLocationSasToken')]" },
           "EnvironmentPrefix": {"value": "[parameters('EnvironmentPrefix')]"},
           "DiagnosticsStorageAccountName": { "value": "[variables('DiagnosticsStorageAccountName')]" },
-          "imageSKU": { "value": "2016-Datacenter" },
-          "imageVersion": { "value": "latest" },
-          "NetName": { "value": "[parameters('NetworkName')]" },
-          "NetResourceGroup": { "value": "[parameters('ResourceGroups').Network]" },
-          "NetSubnetName": { "value": "Webservers" },
-          "Service": { "value": "web" },
-          "VMCount": { "value": 2 },
-          "VMNamePrefix": { "value": "[concat(parameters('EnvironmentPrefix'),'-web-')]" },
-          "VMNameStartOffset": { "value": 1 },
-          "VMSize": { "value": "Standard_A1_v2" },
-          "VMAdminPassword": {"reference": {
-            "keyVault": {
-              "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', parameters('ResourceGroups').KeyVault, '/providers/Microsoft.KeyVault/vaults/',variables('keyvaultname'))]"
-            },
-            "secretName": "AdminLocal"
+          "KeyVault": { 
+            "value": {
+              "Name": "[variables('keyvaultname')]",
+              "ResourceGroup": "[parameters('ResourceGroups').KeyVault]"
             }
           },
+          "Network":{ 
+            "value": {
+              "Name": "[parameters('NetworkName')]",
+              "ResourceGroup": "[parameters('ResourceGroups').Network]",
+              "Subnet":  "Webservers"
+            }
+          },
+          "VM":{ 
+            "value": {
+              "count": 2,
+              "NamePrefix": "[concat(parameters('EnvironmentPrefix'),'-web-')]",
+              "StartOffset": 1,
+              "Size": "Standard_A1_v2",
+              "ImageSKU": "2016-Datacenter",
+              "ImageVersion": "latest",
+              "ImagePublisher": "MicrosoftWindowsServer",
+              "ImageOffer": "WindowsServer"
+            }
+          },
+          "Service": { "value": "web" },
           "VMAdminUserName": { "value": "AdminLocal" },
+          "VMAdminPassword": {
+            "reference": {
+              "keyVault": {
+                "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', parameters('ResourceGroups').KeyVault, '/providers/Microsoft.KeyVault/vaults/',variables('keyvaultname'))]"
+              },
+              "secretName": "AdminLocal"
+            }
+          },
           "CustomscriptExtensionFileURIs": { 
             "value": [
               "https://raw.githubusercontent.com/ceterion/ct.arm.meetup.deploychristmas/master/03-NestedDeployment/CustomScripts/resources/default.htm",

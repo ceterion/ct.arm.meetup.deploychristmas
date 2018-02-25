@@ -27,46 +27,11 @@
                 "description": "Storage Account to store Diagnostics data Entries, name must be unique"
             }
         },
-        "imageSKU": {
-            "type": "string",
-            "defaultValue": "2016-Datacenter",
-            "allowedValues": [
-                "2008-R2-SP1",
-                "2012-Datacenter",
-                "2012-R2-Datacenter",
-                "2016-Datacenter"
-            ],
-            "metadata": {
-                "description": "The Windows Edition for the VM"
-            }
+        "keyvault":{
+            "type": "object"
         },
-        "imageVersion": {
-            "type": "string",
-            "defaultValue": "latest",
-            "metadata": {
-                "description": "The Windows Image version for the VM"
-            }
-        },
-        "NetName": {
-            "type": "string",
-            "defaultValue": "[Concat('vNet-',resourceGroup().location)]",
-            "metadata": {
-                "description": "Name of the VNet to link to"
-            }
-        },
-        "NetResourceGroup": {
-            "type": "string",
-            "defaultValue": "[Concat('network-',resourceGroup().location)]",
-            "metadata": {
-                "description": "Resource Group, the Virtual Network resides in"
-            }
-        },
-        "NetSubnetName": {
-            "type": "string",
-            "defaultValue": "",
-            "metadata": {
-                "description": "Name of the VNet to link to"
-            }
+        "Network":{
+            "type": "object"
         },
         "Service": {
             "type": "string",
@@ -82,37 +47,8 @@
             "type": "string",
             "minLength": 1
         },
-        "VMCount": {
-            "type": "int",
-            "minValue": 1,
-            "defaultValue": 1,
-            "metadata": {
-                "description": "Number of Virtual Machines to be created within this deployment"
-            }
-        },
-        "VMNamePrefix": {
-            "type": "string",
-            "minLength": 1
-        },
-        "VMNameStartOffset": {
-            "type": "int",
-            "minValue": 1,
-            "defaultValue": 1,
-            "metadata": {
-                "description": "First VM Name Number"
-            }
-        },
-        "VMSize": {
-            "type": "string",
-            "minLength": 1,
-            "defaultValue": "Standard_B1s",
-            "allowedValues": [
-                "Standard_A1_v2",
-                "Standard_B1s"
-            ],
-            "metadata": {
-                "description": "Size of the virtual machine, must be available in the virtual machine's location"
-            }
+        "VM": {
+            "type":"object"
         },
         "CustomscriptExtensionFileURIs": {
             "type": "array",
@@ -128,42 +64,35 @@
         }
     },
     "variables": {
-        "NetID": "[resourceId(parameters('NetResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('NETName'))]",
-        "NetName": "[parameters('NetName')]",
-        "NetResourceGroup": "[parameters('NetResourceGroup')]",
-        "NetSubnetName": "[parameters('NetSubnetName')]",
-        "NetSubnetRef": "[Concat(variables('NetID'), '/subnets/', variables('NetSubnetName'))]",
-
-        "VMImagePublisher": "MicrosoftWindowsServer",
-        "VMImageOffer": "WindowsServer",
-        "VMNamePrefix": "[parameters('VMNamePrefix')]",        
-
+        "apiversion-deployments": "2017-08-01",
+        "apiVersion-links": "2017-08-01",
+        
+        "NetID": "[resourceId(parameters('Network').ResourceGroup, 'Microsoft.Network/virtualNetworks', parameters('Network').Name)]",
+        "NetSubnetRef": "[Concat(variables('NetID'), '/subnets/', parameters('Network').SubNet)]",
 
         "AvailabilitySetName": "[toLower(concat('as-',resourceGroup().location,'-',parameters('Service')))]",
-        
-        "dscMemberBaseConfigurationURL": "[concat(parameters('_artifactsLocation'), '/', 'MemberBaseConfiguration.zip')]",
-        "dscMemberBaseConfigurationFunction": "Configure-Memberserver.ps1\\MemberBaseSetup",
-        
-       
-        "CustomScriptsFolder": "CustomScripts",
-        "New-webserverScriptFileName": "Set-WindowsserverBaseConfig.ps1",
-
 
         "lbname": "[concat('lb-',parameters('Service'))]",
+        "lbID": "[resourceId('Microsoft.Network/loadBalancers',variables('lbName'))]",
+        "lbPoolID": "[concat(variables('lbID'),'/backendAddressPools/BackendPool1')]",
+        "lbProbeID": "[concat(variables('lbID'),'/probes/tcpProbe')]",
+
         "publicIPAddressName": "[concat('lb-',parameters('EnvironmentPrefix'),'-',parameters('Service'))]",
         "publicIPAddressType": "Dynamic",
 
         "publicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]",
-        "lbID": "[resourceId('Microsoft.Network/loadBalancers',variables('lbName'))]",
+        
         "frontEndIPConfigID": "[concat(variables('lbID'),'/frontendIPConfigurations/LoadBalancerFrontEnd')]",
-        "lbPoolID": "[concat(variables('lbID'),'/backendAddressPools/BackendPool1')]",
-        "lbProbeID": "[concat(variables('lbID'),'/probes/tcpProbe')]"
+        
+
+        "templates.folder.ResourceTemplates": "Nested",
+        "templates.uri.secret": "[concat(parameters('_artifactsLocation'), '/', variables('templates.folder.ResourceTemplates'), '/', 'keyvaultsecret.json', parameters('_artifactsLocationSasToken'))]"
     },
     "resources": [
         {
             "type": "Microsoft.Resources/links",
-            "apiVersion": "2017-08-01",
-            "name": "[variables('NetName')]",
+            "apiVersion": "[variables('apiversion-links')]",
+            "name": "[parameters('Network').name]",
             "properties": {
                 "targetId": "[variables('NetID')]",
                 "notes": "string"
@@ -257,7 +186,7 @@
                     "backendAddressPool": {
                       "id": "[variables('lbPoolID')]"
                     },
-                    "protocol": "tcp",
+                    "protocol": "Tcp",
                     "frontendPort": 80,
                     "backendPort": 80,
                     "enableFloatingIP": false,
@@ -284,7 +213,7 @@
         {
             "apiVersion": "2015-06-15",
             "type": "Microsoft.Network/publicIPAddresses",
-            "name": "[concat(variables('VMNamePrefix'), padLeft(add(copyindex(),parameters('VMNameStartOffset')),2,'0'),'-pip')]",
+            "name": "[concat(parameters('VM').NamePrefix, padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'),'-pip')]",
             "location": "[resourceGroup().location]",
             "tags": {
                 "displayName": "PublicIPAddress"
@@ -292,30 +221,30 @@
             "properties": {
                 "publicIPAllocationMethod": "Dynamic",
                 "dnsSettings": {
-                    "domainNameLabel": "[toLower(concat(variables('VMNamePrefix'), padLeft(add(copyindex(),parameters('VMNameStartOffset')),2,'0')))]"
+                    "domainNameLabel": "[toLower(concat(parameters('VM').NamePrefix, padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0')))]"
                 }
             },
             "copy": {
                 "name": "publiciploop",
-                "count": "[parameters('VMCount')]"
+                "count": "[parameters('VM').Count]"
             }
         },
         {
             "apiVersion": "2015-05-01-preview",
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "[concat(variables('VMNamePrefix'), padLeft(add(copyindex(),parameters('VMNameStartOffset')),2,'0'),'-nic')]",
+            "name": "[concat(parameters('VM').NamePrefix, padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'),'-nic')]",
             "location": "[resourceGroup().location]",
             "tags": {
                 "displayName": "vm-nic"
               },
             "dependsOn": [
-                "[concat('Microsoft.Network/publicIPAddresses/', variables('VMNamePrefix'), padLeft(add(copyindex(),parameters('VMNameStartOffset')),2,'0'),'-pip')]",
-                "[Concat('Microsoft.Resources/links/',variables('NetName'))]",
+                "[concat('Microsoft.Network/publicIPAddresses/', parameters('VM').NamePrefix, padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'),'-pip')]",
+                "[Concat('Microsoft.Resources/links/',parameters('Network').Name)]",
                 "[concat('Microsoft.Network/loadBalancers/', variables('lbName'))]"
             ],
             "copy": {
               "name": "nicLoop",
-              "count": "[parameters('VMCount')]"
+              "count": "[parameters('VM').Count]"
             },
             "properties": {
               "ipConfigurations": [
@@ -324,7 +253,7 @@
                   "properties": {
                     "privateIPAllocationMethod": "Dynamic",
                     "publicIPAddress": {
-                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('VMNamePrefix'), padLeft(add(copyindex(),parameters('VMNameStartOffset')),2,'0'),'-pip'))]"
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('VM').NamePrefix, padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'),'-pip'))]"
                     },
                     "subnet": {
                       "id": "[variables('NetSubnetRef')]"
@@ -349,34 +278,38 @@
         {
             "apiVersion": "2017-03-30",
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[ concat(variables('VMNamePrefix'),padLeft(add(copyindex(),parameters('VMNameStartOffset')),2,'0'))]",
+            "name": "[ concat(parameters('VM').NamePrefix,padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'))]",
+            "tags":{
+                "displayname": "VM",
+                "service": "[parameters('Service')]"
+            },
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/', concat(variables('VMNamePrefix'), padLeft(add(copyindex(),parameters('VMNameStartOffset')),2,'0'),'-nic'))]",
+                "[concat('Microsoft.Network/networkInterfaces/', concat(parameters('VM').NamePrefix, padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'),'-nic'))]",
                 "[concat('Microsoft.Compute/availabilitySets/',variables('availabilitySetName'))]"
             ],
             "copy": {
                 "name": "VMLoop",
-                "count": "[parameters('VMCount')]"
+                "count": "[parameters('VM').count]"
             },
             "properties": {
                 "availabilitySet": {
                     "id": "[resourceid('Microsoft.Compute/availabilitySets/', variables('availabilitySetName'))]"
                 },
                 "hardwareProfile":{
-                    "vmSize": "[parameters('VMSize')]"
+                    "vmSize": "[parameters('VM').Size]"
                 },
                 "osProfile": {
                     "adminPassword": "[parameters('VMAdminPassword')]",
                     "adminUsername": "[parameters('VMAdminUserName')]",
-                    "computerName": "[concat(variables('VMNamePrefix'),padLeft(add(copyindex(),parameters('VMNameStartOffset')),2,'0'))]"
+                    "computerName": "[concat(parameters('VM').NamePrefix,padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'))]"
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "publisher": "[variables('VMImagePublisher')]",
-                        "offer": "[variables('VMImageOffer')]",
-                        "sku": "[parameters('imageSKU')]",
-                        "version": "[parameters('imageVersion')]"
+                        "publisher": "[parameters('VM').ImagePublisher]",
+                        "offer": "[parameters('VM').ImageOffer]",
+                        "sku": "[parameters('VM').imageSKU]",
+                        "version": "[parameters('VM').imageVersion]"
                     },
                     "osDisk": {
                         "createOption": "FromImage"
@@ -385,13 +318,13 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('VMNamePrefix'),padLeft(add(copyindex(),parameters('VMNameStartOffset')),2,'0'),'-nic'))]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('VM').NamePrefix,padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'),'-nic'))]"
                         }
                     ]
                 },
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
-                    "enabled": "true",
+                    "enabled": true,
                     "storageUri": "[concat('http://',parameters('DiagnosticsStorageAccountName'),'.blob.core.windows.net')]"
                     } 
                 }
@@ -403,7 +336,7 @@
                     "location": "[resourceGroup().location]",
                     "apiVersion": "2016-03-30",
                     "dependsOn": [
-                      "[resourceId('Microsoft.Compute/virtualMachines',  concat(variables('VMNamePrefix'),padLeft(add(copyindex(),parameters('VMNameStartOffset')),2,'0')))]"
+                      "[resourceId('Microsoft.Compute/virtualMachines',  concat(parameters('VM').NamePrefix,padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0')))]"
                     ],
                     "tags": {
                       "displayName": "meetup-webserver"
