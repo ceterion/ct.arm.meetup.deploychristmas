@@ -131,16 +131,8 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "_artifactsLocation": { "value": "[parameters('_artifactsLocation')]" },
-          "_artifactsLocationSasToken": { "value": "[parameters('_artifactsLocationSasToken')]" },
           "EnvironmentPrefix": {"value": "[parameters('EnvironmentPrefix')]"},
           "DiagnosticsStorageAccountName": { "value": "[variables('DiagnosticsStorageAccountName')]" },
-          "KeyVault": { 
-            "value": {
-              "Name": "[variables('keyvaultname')]",
-              "ResourceGroup": "[parameters('ResourceGroups').KeyVault]"
-            }
-          },
           "Network":{ 
             "value": {
               "Name": "[parameters('NetworkName')]",
