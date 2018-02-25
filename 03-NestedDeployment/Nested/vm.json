@@ -28,10 +28,16 @@
             }
         },
         "keyvault":{
-            "type": "object"
+            "type": "object",
+            "metadata": {
+                "description": "KeyVault Parameters"
+            }
         },
         "Network":{
-            "type": "object"
+            "type": "object",
+            "metadata": {
+                "description": "Network Parameters"
+            }
         },
         "Service": {
             "type": "string",
@@ -48,18 +54,21 @@
             "minLength": 1
         },
         "VM": {
-            "type":"object"
+            "type":"object",
+            "metadata": {
+                "description": "VM Parameters"
+            }
         },
         "CustomscriptExtensionFileURIs": {
             "type": "array",
             "metadata": {
-                "description": "Size of the virtual machine, must be available in the virtual machine's location"
+                "description": "Array of files to download for custom script execution"
             }
         },
         "CustomScriptCommand": {
             "type": "string",
             "metadata": {
-                "description": "Size of the virtual machine, must be available in the virtual machine's location"
+                "description": "Command to execute within customscriptextension"
             }
         }
     },
