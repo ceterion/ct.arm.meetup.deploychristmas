@@ -28,7 +28,6 @@
    },
       "EnvironmentPrefix": {
          "type": "string",
-         "defaultValue": "ff",
          "metadata": {
               "description": "Unique prefix for your Environment. Might be a Customer Name or something related"
           }
