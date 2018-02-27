@@ -33,10 +33,6 @@ function Format-ValidationOutput {
 $OptionalParameters = New-Object -TypeName Hashtable
 $TemplateArgs = New-Object -TypeName Hashtable
 
-# Get Environmentprefix to be used to generate unique Names for Resources
-# $Environmentprefix = Read-Host -Prompt "Provide a Prefix that will be used to construct unique resource names" 
-# $OptionalParameters['EnvironmentPrefix'] = $Environmentprefix
-
 if ($Dev) {
     $TemplateParametersFile = $TemplateParametersFile.Replace('azuredeploy.parameters.json', 'azuredeploy.parameters.dev.json')
     if (!(Test-Path $TemplateParametersFile)) {
