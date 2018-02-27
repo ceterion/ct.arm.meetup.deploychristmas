@@ -145,7 +145,7 @@
           },
           "VM":{ 
             "value": {
-              "count": 2,
+              "count": 1,
               "NamePrefix": "[concat(parameters('EnvironmentPrefix'),'-web-')]",
               "StartOffset": 1,
               "Size": "Standard_A1_v2",
