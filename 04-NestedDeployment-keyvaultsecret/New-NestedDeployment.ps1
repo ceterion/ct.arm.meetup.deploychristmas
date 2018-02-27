@@ -140,6 +140,20 @@ if ($ValidateOnly) {
     }
 }
 else {
+    $OptionalParameters.add('DeploymentMode','Prepare')
+    
+    New-AzureRmResourceGroupDeployment -Name ((Get-ChildItem $TemplateFile).BaseName + '-' + ((Get-Date).ToUniversalTime()).ToString('MMdd-HHmm')) `
+                                       -ResourceGroupName $StorageResourceGroupName `
+                                       @TemplateArgs `
+                                       @OptionalParameters `
+                                       -Force -Verbose `
+                                       -ErrorVariable ErrorMessages
+    if ($ErrorMessages) {
+        Write-Output '', 'Template deployment returned the following errors:', @(@($ErrorMessages) | ForEach-Object { $_.Exception.Message.TrimEnd("`r`n") })
+    }
+
+    $OptionalParameters['DeploymentMode'] = 'Full'
+    
     New-AzureRmResourceGroupDeployment -Name ((Get-ChildItem $TemplateFile).BaseName + '-' + ((Get-Date).ToUniversalTime()).ToString('MMdd-HHmm')) `
                                        -ResourceGroupName $StorageResourceGroupName `
                                        @TemplateArgs `

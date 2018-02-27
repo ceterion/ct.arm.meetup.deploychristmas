@@ -27,6 +27,12 @@
                 "description": "Storage Account to store Diagnostics data Entries, name must be unique"
             }
         },
+        "DeploymentMode": {
+            "type": "string",
+            "metadata": {
+                "description": "Determines, which Resources to deploy"
+            }
+        },
         "keyvault":{
             "type": "object"
         },
@@ -79,6 +85,7 @@
             }
         },
         {
+          "condition": "[equals(parameters('DeploymentMode'),'Full')]",
           "name": "[concat(parameters('VM').NamePrefix,padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'))]",
           "type": "Microsoft.Resources/deployments",
           "apiVersion": "[variables('apiversion-deployments')]",

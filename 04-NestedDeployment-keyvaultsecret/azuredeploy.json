@@ -50,7 +50,13 @@
         "metadata": {
              "description": "ResourceGroup to deploy Network Components to"
         }
-      }
+      },
+      "DeploymentMode": {
+        "type": "string",
+        "metadata": {
+             "description": "Name of the virtual Network"
+         }
+     }
     },
     "variables": {  
         "resourceTemplateFolder": "Nested",
@@ -121,6 +127,7 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
+          "DeploymentMode": {"value": "[parameters('DeploymentMode')]"},
           "_artifactsLocation": { "value": "[parameters('_artifactsLocation')]" },
           "_artifactsLocationSasToken": { "value": "[parameters('_artifactsLocationSasToken')]" },
           "EnvironmentPrefix": {"value": "[parameters('EnvironmentPrefix')]"},
@@ -140,7 +147,7 @@
           },
           "VM":{ 
             "value": {
-              "count": 1,
+              "count": 2,
               "NamePrefix": "[concat(parameters('EnvironmentPrefix'),'-web-')]",
               "StartOffset": 1,
               "Size": "Standard_A1_v2",
