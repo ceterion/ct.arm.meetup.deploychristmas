@@ -106,7 +106,6 @@
               },
             "dependsOn": [
                 "[Concat('Microsoft.Resources/links/',parameters('Network').Name)]"
-                //"[concat('Microsoft.Network/loadBalancers/', variables('lbName'))]"
             ],
             "properties": {
               "ipConfigurations": [

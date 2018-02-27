@@ -54,16 +54,12 @@
     },
     "variables": {  
         "resourceTemplateFolder": "Nested",
-        "ExtensionTemplateFolder": "CustomScripts",
         
-        "KeyVaultTemplateFileName": "keyvault.json",
         "NetworkTemplateFileName": "vnet.json",
-        "VMTemplateFileName": "vm.json",
         "ServiceTemplateFileName": "service.json",
         "DiagnosticsStorageTemplateFileName": "DiagnosticsStorage.json",
         
         "ServiceTemplateURI": "[concat(parameters('_artifactsLocation'), '/', variables('resourceTemplateFolder'), '/', variables('ServiceTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
-        "kevaultTemplateURI": "[concat(parameters('_artifactsLocation'), '/', variables('resourceTemplateFolder'), '/', variables('KeyVaultTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
         "NetworkTemplateURI": "[concat(parameters('_artifactsLocation'), '/', variables('resourceTemplateFolder'), '/', variables('NetworkTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
         "DiagnosticsStorageTemplateURI": "[concat(parameters('_artifactsLocation'), '/', variables('resourceTemplateFolder'), '/', variables('DiagnosticsStorageTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
 
@@ -153,26 +149,7 @@
               "ImagePublisher": "MicrosoftWindowsServer",
               "ImageOffer": "WindowsServer"
             }
-          },
-          "Service": { "value": "web" },
-          "VMAdminUserName": { "value": "AdminLocal" },
-          "VMAdminPassword": {
-            "reference": {
-              "keyVault": {
-                "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', parameters('ResourceGroups').KeyVault, '/providers/Microsoft.KeyVault/vaults/',variables('keyvaultname'))]"
-              },
-              "secretName": "AdminLocal"
-            }
-          },
-          
-          "CustomscriptExtensionFileURIs": { 
-            "value": [
-              "https://raw.githubusercontent.com/ceterion/ct.arm.meetup.deploychristmas/master/03-NestedDeployment/CustomScripts/resources/default.htm",
-              "https://raw.githubusercontent.com/ceterion/ct.arm.meetup.deploychristmas/master/03-NestedDeployment/CustomScripts/resources/deployazure.png",
-              "https://raw.githubusercontent.com/ceterion/ct.arm.meetup.deploychristmas/master/03-NestedDeployment/CustomScripts/new-deployazurewebserver.ps1"
-            ]
-          },
-          "CustomScriptCommand":{"value": "powershell -ExecutionPolicy Unrestricted -File new-deployazurewebserver.ps1"}
+          }
         }
       }
     }

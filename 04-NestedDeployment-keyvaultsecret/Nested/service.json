@@ -33,34 +33,8 @@
         "Network":{
             "type": "object"
         },
-        "Service": {
-            "type": "string",
-            "defaultValue": "web",
-            "metadata": {
-                "description": "The service Name is used as part of the generated virtual machine names"
-            }
-        },
-        "VMAdminPassword": {
-            "type": "securestring"
-        },
-        "VMAdminUserName": {
-            "type": "string",
-            "minLength": 1
-        },
         "VM": {
             "type":"object"
-        },
-        "CustomscriptExtensionFileURIs": {
-            "type": "array",
-            "metadata": {
-                "description": "Size of the virtual machine, must be available in the virtual machine's location"
-            }
-        },
-        "CustomScriptCommand": {
-            "type": "string",
-            "metadata": {
-                "description": "Size of the virtual machine, must be available in the virtual machine's location"
-            }
         }
     },
     "variables": {
@@ -68,11 +42,6 @@
         "apiVersion-links": "2017-08-01",
         
         "NetID": "[resourceId(parameters('Network').ResourceGroup, 'Microsoft.Network/virtualNetworks', parameters('Network').Name)]",
-
-        "AvailabilitySetName": "[toLower(concat('as-',resourceGroup().location,'-',parameters('Service')))]",
-
-        "publicIPAddressName": "[concat('lb-',parameters('EnvironmentPrefix'),'-',parameters('Service'))]",
-        "publicIPAddressType": "Dynamic",
         
         "templates.folder.ResourceTemplates": "Nested",
         "templates.uri.secret": "[concat(parameters('_artifactsLocation'), '/', variables('templates.folder.ResourceTemplates'), '/', 'keyvaultsecret.json', parameters('_artifactsLocationSasToken'))]",
@@ -153,7 +122,6 @@
                   "keyVault": {
                     "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', parameters('keyvault').ResourceGroup, '/providers/Microsoft.KeyVault/vaults/',parameters('keyvault').name)]"
                   },
-                  //"secretName": "AdminLocal"
                   "secretName": "[concat(parameters('VM').NamePrefix, padLeft(add(copyindex(),parameters('VM').StartOffset),2,'0'),'-admin')]"
                 }
               },
