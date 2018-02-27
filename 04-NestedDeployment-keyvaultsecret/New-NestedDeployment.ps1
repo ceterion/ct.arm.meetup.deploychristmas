@@ -33,6 +33,10 @@ function Format-ValidationOutput {
 $OptionalParameters = New-Object -TypeName Hashtable
 $TemplateArgs = New-Object -TypeName Hashtable
 
+# Get Environmentprefix to be used to generate unique Names for Resources
+# $Environmentprefix = Read-Host -Prompt "Provide a Prefix that will be used to construct unique resource names" 
+# $OptionalParameters['EnvironmentPrefix'] = $Environmentprefix
+
 if ($Dev) {
     $TemplateParametersFile = $TemplateParametersFile.Replace('azuredeploy.parameters.json', 'azuredeploy.parameters.dev.json')
     if (!(Test-Path $TemplateParametersFile)) {
@@ -67,11 +71,6 @@ if ($UploadArtifacts) {
     $OptionalParameters[$ArtifactsLocationName] = $JsonParameters | Select-Object -Expand $ArtifactsLocationName -ErrorAction Ignore | Select-Object -Expand 'value' -ErrorAction Ignore
     $OptionalParameters[$ArtifactsLocationSasTokenName] = $JsonParameters | Select-Object -Expand $ArtifactsLocationSasTokenName -ErrorAction Ignore | Select-Object -Expand 'value' -ErrorAction Ignore
 
-    # Get current AzureContext Account ID 
-    $CurrentAccountID = (Get-AzureRmADUser -defaultprofile (Get-AzureRmcontext)).id
-    
-    #$CurrentAccountID= (Get-AzureRmContext).name.trim("[","]").split(",").trim()[1]
-    $OptionalParameters['AccountID'] = $CurrentAccountID
     # Create DSC configuration archive
     if (Test-Path $DSCSourceFolder) {
         $DSCSourceFilePaths = @(Get-ChildItem $DSCSourceFolder -File -Filter '*.ps1' | ForEach-Object -Process {$_.FullName})
