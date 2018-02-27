@@ -14,12 +14,6 @@
           "description": "Auto-generated token to access _artifactsLocation"
         }
       },
-      "AccountID": {
-        "type": "string",
-        "metadata": {
-             "description": "The Account which is executing the deployment"
-         }
-     },
      "location": {
       "type": "string",
       "metadata": {
