@@ -33,6 +33,9 @@ function Format-ValidationOutput {
 $OptionalParameters = New-Object -TypeName Hashtable
 $TemplateArgs = New-Object -TypeName Hashtable
 
+$EnvironmentPrefix = Read-Host "Provide a Prefix to use in Resource Naming" 
+$OptionalParameters.Add('EnvironmentPrefix', $EnvironmentPrefix)
+
 if ($Dev) {
     $TemplateParametersFile = $TemplateParametersFile.Replace('azuredeploy.parameters.json', 'azuredeploy.parameters.dev.json')
     if (!(Test-Path $TemplateParametersFile)) {
