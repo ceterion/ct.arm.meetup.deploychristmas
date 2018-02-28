@@ -127,10 +127,11 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
+          "EnvironmentPrefix": {"value": "[parameters('EnvironmentPrefix')]"},
+          "ServiceName": {"value": "web"},
           "DeploymentMode": {"value": "[parameters('DeploymentMode')]"},
           "_artifactsLocation": { "value": "[parameters('_artifactsLocation')]" },
           "_artifactsLocationSasToken": { "value": "[parameters('_artifactsLocationSasToken')]" },
-          "EnvironmentPrefix": {"value": "[parameters('EnvironmentPrefix')]"},
           "DiagnosticsStorageAccountName": { "value": "[variables('DiagnosticsStorageAccountName')]" },
           "KeyVault": { 
             "value": {
