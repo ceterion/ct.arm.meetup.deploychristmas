@@ -164,7 +164,7 @@
           "CustomscriptExtensionFileURIs": { 
             "value": [
               "https://raw.githubusercontent.com/ceterion/ct.arm.meetup.deploychristmas/master/03-NestedDeployment/CustomScripts/resources/default.htm",
-              "https://raw.githubusercontent.com/ceterion/ct.arm.meetup.deploychristmas/master/03-NestedDeployment/CustomScripts/resources/deployazure.png",
+              "https://raw.githubusercontent.com/ceterion/ct.arm.meetup.deploychristmas/master/03-NestedDeployment/CustomScripts/resources/Fabi_Bonn_Meetup-webserverimage.png",
               "https://raw.githubusercontent.com/ceterion/ct.arm.meetup.deploychristmas/master/03-NestedDeployment/CustomScripts/new-deployazurewebserver.ps1"
             ]
           },
