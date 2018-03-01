@@ -3,7 +3,7 @@ $resourcegroupname = "securitydata"
 
 $Parameters = New-Object -TypeName Hashtable
 
-$Environmentprefix = Read-Host - Prompt "Provide a Prefix that will be leading the Name of your KeyVault" 
+$Environmentprefix = Read-Host -Prompt "Provide a Prefix that will be leading the Name of your KeyVault" 
 # Get current AzureContext Account ID 
 $CurrentAccountID = (Get-AzureRmADUser -defaultprofile (Get-AzureRmcontext)).id.tostring()
 $Parameters.Add('AccountID', $CurrentAccountID)
