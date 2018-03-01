@@ -6,6 +6,12 @@
 
 This session gives an overview to the most commonly used Azure Resources to build IaaS Environments. It is divided into the following three parts, each a little more complex.
 
+##Prerequisites
+https://marketplace.visualstudio.com/items?itemName=patrys.vscode-code-outline
+https://marketplace.visualstudio.com/items?itemName=samcogan.arm-snippets
+https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools
+https://marketplace.visualstudio.com/items?itemName=ms-vscode.PowerShell
+
 ### 01-SimpleDeployment
 
 This template is generated from Scratch using Visual Studio Code Azure Resource Manager Snippets Plugin and is deployed with a very basic command without using any parameters.
