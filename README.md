@@ -6,11 +6,27 @@
 
 This session gives an overview to the most commonly used Azure Resources to build IaaS Environments. It is divided into the following three parts, each a little more complex.
 
-##Prerequisites
-https://marketplace.visualstudio.com/items?itemName=patrys.vscode-code-outline
-https://marketplace.visualstudio.com/items?itemName=samcogan.arm-snippets
-https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools
-https://marketplace.visualstudio.com/items?itemName=ms-vscode.PowerShell
+## Prerequisites
+
+### VSCode & Extensions
+
+[Visual Studio Code](https://code.visualstudio.com/download)
+
+[Azure Resource Manager Tools](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools)
+
+[Azure Resource Manager Snippets](https://marketplace.visualstudio.com/items?itemName=samcogan.arm-snippets)
+
+[PowerShell Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.PowerShell)
+
+### Azure Powershell Module
+
+```powershell
+Install-Module AzureRM -AllowClobber
+```
+
+### Git
+
+[Download Git Client](https://git-scm.com/downloads)
 
 ### 01-SimpleDeployment
 
