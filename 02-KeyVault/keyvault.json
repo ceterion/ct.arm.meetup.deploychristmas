@@ -2,12 +2,6 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "AccountID": {
-           "type": "string",
-           "metadata": {
-                "description": "The Account which is executing the deployment"
-            }
-        },
         "keyVaultName": {
             "type": "string",
             "metadata": {
@@ -37,16 +31,7 @@
               "enabledForDiskEncryption": true,
               "enabledForTemplateDeployment": true,
               "tenantId": "[subscription().tenantId]",
-              "accessPolicies": [
-                {
-                  "tenantId": "[subscription().tenantId]",
-                  "objectId": "[parameters('AccountID')]",
-                  "permissions": {
-                    "keys": ["all"],
-                    "secrets": ["all"]
-                  }
-                }
-              ],
+              "accessPolicies": [],
               "sku": {
                 "name": "Standard",
                 "family": "A"
